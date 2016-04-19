@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<title>Example Javascript Chat Client</title>
+		<meta charset="utf-8" />
+		<script>
+
+			var ws;
+
+			function init() {
+
+		      	// Connect to Web Socket
+		      	ws = new WebSocket("ws://localhost:8888");
+
+		      	// Set event handlers.
+		      	ws.onopen = function(callback) {
+		      		output("<b>Server:</b> Chat open.");
+		      		ws.send(JSON.stringify({
+		      			"function": "set_custom_variables", 
+		      			"custom_variables": 
+		      				{"name": document.getElementById("name").innerHTML},
+		      			"callback": "retrieve_clients"
+		      		}));
+		      	};
+		      
+		      	ws.onmessage = function(e) {
+		        	var data = JSON.parse(e.data);
+		        	if (data["function"] == "send_message" && data["callback"] != "retrieve_message") {
+		        		var message = data["message"];
+		        		var sender_id = data["sender"]["id"];
+		        		var sender_ip = data["sender"]["id"];
+		        		var sender_port = data["sender"]["id"];
+		        		var name = data["sender"]["custom"]["name"];
+		        		output("<span style='color:#CC0000;'>" + new Date().toLocaleString() + "  <b>" + name + ":</b></span>  " + message);
+		        	}
+		        	if (data["callback"] == "retrieve_clients") {
+		        		ws.send(JSON.stringify({"function": "retrieve_clients", "callback": "display_clients"}));
+		        	}
+		        	if (data["callback"] == "display_clients") {
+		        		var clients = JSON.stringify(data["clients"]);
+		        		output("<b>Server:</b> Clients: " + clients);
+		        	}
+		    	};
+
+			    ws.onclose = function(e) {
+			    	output("Chat closed.");
+			    	console.log(e.code);
+			    };
+
+			    ws.onerror = function(e) {
+			    	output("Error");
+			    	console.log(e);
+			    };
+
+			}
+
+			function onSubmit() {
+				var message = document.getElementById("input").value;
+				var json = {
+					"function": "send_message",
+					"recipient_ids": [document.getElementById("recipient").value],
+					"message": message,
+					"callback": "retrieve_message"
+				};
+				var json_string = JSON.stringify(json);
+			    // You can send message to the Web Socket using ws.send.
+				ws.send(json_string);
+				output("<span style='color:#204A87;'>" + new Date().toLocaleString() + "  " + "<b>" + document.getElementById("name").innerHTML + ": </b></span>" + message);
+				var input = document.getElementById("input");
+				input.focus();
+			}
+
+			function onCloseClick() {
+			  	ws.close();
+			}
+
+			function output(str) {
+			  	document.getElementById("log").innerHTML += str + "<br />";
+			}
+
+		</script>
+	</head>
+	<body onload="init();">
+		<form onsubmit="onSubmit(); return false;">
+			Name: <span id="name">Gandalf</span><br />
+			Message: <input type="text" id="input"><br />
+			Recipient Id: <input type="text" id="recipient"><br />
+			<input type="submit" value="Send">
+			<button onclick="onCloseClick(); return false;">close</button>
+		</form>
+		<div id="log"></div>
+	</body>
+</html>

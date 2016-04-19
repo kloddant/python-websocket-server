@@ -318,6 +318,3 @@ class WebSocketHandler(StreamRequestHandler):
 	# This is a property of BaseRequestHandler
 	def finish(self):
 		self.server.disconnect(self)
-
-
-test_server = WebSocketServer(host="10.103.1.25", port=8888)

@@ -10,55 +10,58 @@ All api requests are sent to the server via json encoded as strings, and all wil
 Send a message to another client.
 
     {
-        "function": "send_message",
-        "recipient_ids": [],
-        "message": "message",
-        "callback": "",
+        "function": "send_message",         #required
+        "recipient_ids": [],                #required
+        "message": "message",               #required
+        "secret_key": "",                   #optional
+        "callback": "",                     #optional
     }
     
 Retrieve a dictionary of every public client, including their id, ip, port, and custom variables.
 
     {
-        "function": "retrieve_clients",
-        "callback": "",
+        "function": "retrieve_clients",     #required
+        "secret_key": "",                   #optional
+        "callback": "",                     #optional
     }
     
 Specify custom variables for a client, such as their name.
 
     {
-        "function": "set_custom_variables",
-        "custom_variables": {"name":"Bob"},
-        "callback": "",
+        "function": "set_custom_variables", #required
+        "custom_variables": {"name":"Bob"}, #required
+        "callback": "",                     #optional
     }
     
 Set a client's privacy to "public" or "private".
 
     {
-        "function": "set_privacy",
-        "privacy": "public",
-        "callback": "",
+        "function": "set_privacy",          #required
+        "privacy": "public",                #required
+        "callback": "",                     #optional
     }
   
 Allow an ip address to contact a private client.
 
     {
-        "function": "allow_ip",
-        "ip": "127.0.0.1",
-        "callback": "",
+        "function": "allow_ip",             #required
+        "ip": "127.0.0.1",                  #required
+        "callback": "",                     #optional
     }  
     
 Block an ip address from contacting a client.
 
     {
-        "function": "block_ip",
-        "ip": "127.0.0.1",
-        "callback": "",
+        "function": "block_ip",             #required
+        "ip": "127.0.0.1",                  #required
+        "callback": "",                     #optional
     }
     
 Ban an ip address from contacting anyone for as long as the server is up.
 
     {
-        "function": "ban_ip",
-        "ip": "127.0.0.1",
-        "callback": "",
+        "function": "ban_ip",               #required
+        "ip": "127.0.0.1",                  #required
+        "secret_key": "",                   #required
+        "callback": "",                     #optional
     }

@@ -78,19 +78,21 @@ class WebSocketAPI:
 		function = data['function']
 
 		if function == "send_message" and keys_in_dict(['message', 'recipient_ids'], data):
-			self.send_message(handler, ip, port, data['recipient_ids'], data['message'], data["callback"])
+			self.send_message(handler=handler, ip=ip, port=port, recipient_ids=data['recipient_ids'], message=data['message'], secret_key=secret_key, callback=data["callback"])
 		elif function == "retrieve_clients":
-			self.retrieve_clients(socket, ip, secret_key, data["callback"])
+			self.retrieve_clients(socket=socket, ip=ip, secret_key=secret_key, callback=data["callback"])
 		elif function == "set_custom_variables":
-			self.set_custom_variables(handler, data["custom_variables"], data["callback"])
+			self.set_custom_variables(handler=handler, custom_variables=data["custom_variables"], callback=data["callback"])
 		elif function == "set_privacy" and 'privacy' in data:
-			self.set_privacy(handler, data['privacy'], data["callback"])
+			self.set_privacy(handler=handler, privacy=data['privacy'], callback=data["callback"])
 		elif function == "block_ip" and "ip" in data:
-			self.block_ip(handler, data['ip'], data["callback"])
+			self.block_ip(handler=handler, ip=data['ip'], callback=data["callback"])
+		elif function == "allow_ip" and "ip" in data:
+			self.allow_ip(handler=handler, ip=data['ip'], callback=data["callback"])
 		elif function == "ban_ip" and keys_in_dict(['ip', 'secret_key'], data):
-			self.ban_ip(socket, data["ip"], data["callback"])
+			self.ban_ip(socket=socket, ip=data["ip"], callback=data["callback"])
 
-	def send_message(self, handler, ip, port, recipient_ids, message, callback):
+	def send_message(self, handler, ip, port, recipient_ids, message, secret_key, callback):
 		print "Sending message..."
 		client = self.handler_to_client(handler)
 		sender = {"id": client["id"], "ip": ip, "port": port, "custom": client["custom"]}
@@ -99,7 +101,7 @@ class WebSocketAPI:
 			if recipient_id not in self.clients:
 				continue
 			recipient = self.clients[recipient_id]
-			if ip not in recipient["blocked"] and (ip in recipient["allowed"] or recipient["privacy"] == "public"):
+			if (ip not in recipient["blocked"] and (ip in recipient["allowed"] or recipient["privacy"] == "public")) or secret_key:
 				socket = recipient["handler"].request
 				outgoing_data = json.dumps({"function":"send_message", "sender": sender, "message": message})
 				self.send(socket, outgoing_data)
@@ -143,6 +145,13 @@ class WebSocketAPI:
 		if client:
 			client["blocked"].append(ip)
 		response = json.dumps({"function": "block_ip", "callback": callback})
+		self.send(handler.request, response)
+
+	def allow_ip(self, handler, ip, callback):
+		client = self.handler_to_client(handler)
+		if client:
+			client["allowed"].append(ip)
+		response = json.dumps({"function": "allow_ip", "callback": callback})
 		self.send(handler.request, response)
 
 	def ban_ip(self, socket, ip, callback):

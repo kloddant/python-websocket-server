@@ -5,7 +5,7 @@ A Python websocket server with a json api.
 Download everything and double-click start_server.bat.  Then open javascript_chat_client.html in two different windows, and start chatting with yourself.
 
 ## API
-All api requests are sent to the server via json encoded as strings, and all will get responses returned as json strings.  All of them have a required function parameter, which specifies what they are trying to do.  All of them also have an optional callback parameter which does nothing on the server but will be returned in the server's response so that you can then activate another function on the client side.  Here are some example requests:
+All api requests are sent to the server via json encoded as strings, and all will get responses returned as json strings.  All of them have a required function parameter, which specifies what they are trying to do.  All of them also have an optional callback parameter which does nothing on the server but will be returned in the server's response so that you can then activate another function on the client side.  Some of them take the secret key as a parameter, which can be used to override privacy preferences so that admins can communicate with anyone.  Here are some example requests:
 
 Send a message to another client.
 

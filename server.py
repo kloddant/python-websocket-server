@@ -11,9 +11,6 @@ import datetime
 import json
 import cgi
 
-SECRET_KEY = "12345"
-DEFAULT_PRIVACY = ["public", "private"][0]
-
 # http://stackoverflow.com/questions/4685217/parse-raw-http-headers
 class HttpRequest(BaseHTTPRequestHandler):
 
@@ -67,9 +64,9 @@ class WebSocketAPI:
 		data = json.loads(cgi.escape(data))
 		secret_key = False
 
-		if 'secret_key' in data and data['secret_key'] != SECRET_KEY:
+		if 'secret_key' in data and data['secret_key'] != self.secret_key:
 			return
-		if 'secret_key' in data and data['secret_key'] == SECRET_KEY:
+		if 'secret_key' in data and data['secret_key'] == self.secret_key:
 			secret_key = data['secret_key']
 		if ip in self.banned_ips:
 			return
@@ -156,16 +153,19 @@ class WebSocketAPI:
 
 class WebSocketServer(ThreadingMixIn, TCPServer, WebSocketAPI):
 
-	global SECRET_KEY
-	global DEFAULT_PRIVACY
 	client_id_counter = 0
 	clients = {}
 	banned_ips = set()
 
-	def __init__(self, port=8888, host=socket.gethostbyname(socket.gethostname())):
+	def __init__(self, port=8888, host=socket.gethostbyname(socket.gethostname()), secret_key="12345", default_privacy="private"):
 		print "Initializing..."
 		self.port = port
 		self.host = host
+		self.secret_key = secret_key
+		if default_privacy in ["public", "private"]:
+			self.default_privacy = default_privacy
+		else:
+			self.default_privacy = "private"
 		TCPServer.__init__(self, (host, port), WebSocketHandler)
 		self.ip = self.server_address[0]
 		threading.Timer(60, self.remove_expired_clients)
@@ -182,7 +182,7 @@ class WebSocketServer(ThreadingMixIn, TCPServer, WebSocketAPI):
 			"datetime": datetime.datetime.now(),
 			"allowed": [], #ip addresses
 			"blocked": [], #ip addresses
-			"privacy": DEFAULT_PRIVACY,
+			"privacy": self.default_privacy,
 			"custom": {},
 		}
 		self.clients[str(self.client_id_counter)] = client
@@ -320,4 +320,4 @@ class WebSocketHandler(StreamRequestHandler):
 		self.server.disconnect(self)
 
 
-server = WebSocketServer(host="localhost", port=8888)
+server = WebSocketServer(host="localhost", port=8888, secret_key="12345", default_privacy="public")
